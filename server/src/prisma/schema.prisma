@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  boards    Board[]
+  createdAt DateTime @default(now())
+}
+
+model Board {
+  id        String   @id @default(cuid())
+  title     String
+  color     String   @default("#0079bf")
+  owner     User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  lists     List[]
+  createdAt DateTime @default(now())
+}
+
+model List {
+  id        String   @id @default(cuid())
+  title     String
+  position  Float
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId   String
+  cards     Card[]
+  createdAt DateTime @default(now())
+}
+
+model Card {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  position    Float
+  dueDate     DateTime?
+  list        List        @relation(fields: [listId], references: [id], onDelete: Cascade)
+  listId      String
+  labels      Label[]
+  checklists  Checklist[]
+  createdAt   DateTime    @default(now())
+}
+
+model Label {
+  id     String @id @default(cuid())
+  text   String
+  color  String
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId String
+}
+
+model Checklist {
+  id     String          @id @default(cuid())
+  title  String
+  card   Card            @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId String
+  items  ChecklistItem[]
+}
+
+model ChecklistItem {
+  id          String    @id @default(cuid())
+  text        String
+  checked     Boolean   @default(false)
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  checklistId String
+}
