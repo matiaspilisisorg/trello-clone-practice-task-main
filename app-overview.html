@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trello Clone — App Overview</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-card-hover: #1c2230;
+      --border: #30363d;
+      --accent-blue: #58a6ff;
+      --accent-purple: #bc8cff;
+      --accent-green: #3fb950;
+      --accent-orange: #f78166;
+      --accent-yellow: #e3b341;
+      --accent-teal: #39d0d8;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted: #484f58;
+      --gradient-blue: linear-gradient(135deg, #1f6feb 0%, #58a6ff 100%);
+      --gradient-purple: linear-gradient(135deg, #6e40c9 0%, #bc8cff 100%);
+      --gradient-green: linear-gradient(135deg, #1a7f37 0%, #3fb950 100%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 72px 24px 64px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 50%, rgba(31,111,235,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 60% at 80% 40%, rgba(110,64,201,.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(88,166,255,.12);
+      border: 1px solid rgba(88,166,255,.3);
+      color: var(--accent-blue);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #e6edf3 0%, #8b949e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      max-width: 560px;
+      margin: 0 auto 36px;
+      color: var(--text-secondary);
+      font-size: 17px;
+    }
+    .hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .pill-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+    }
+
+    /* ── Nav tabs ── */
+    .nav-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,17,23,.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      padding: 0 24px;
+    }
+    .nav-tab {
+      padding: 16px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color .2s, border-color .2s;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .nav-tab:hover { color: var(--text-primary); }
+    .nav-tab.active { color: var(--text-primary); border-bottom-color: var(--accent-blue); }
+
+    /* ── Sections ── */
+    .section {
+      display: none;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+    .section.active { display: block; }
+
+    .section-header { margin-bottom: 40px; }
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-size: clamp(24px, 3vw, 36px);
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin-bottom: 12px;
+    }
+    .section-desc { color: var(--text-secondary); max-width: 580px; font-size: 15px; }
+
+    /* ── Cards grid ── */
+    .grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color .2s, background .2s;
+    }
+    .card:hover { border-color: #444c56; background: var(--bg-card-hover); }
+
+    .card-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      margin-bottom: 14px;
+    }
+    .card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .card p, .card ul {
+      color: var(--text-secondary);
+      font-size: 13.5px;
+      line-height: 1.65;
+    }
+    .card ul { padding-left: 16px; }
+    .card ul li { margin-bottom: 4px; }
+
+    /* ── Feature highlight rows ── */
+    .feature-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .feature-row:last-child { border-bottom: none; }
+    .feature-icon {
+      flex-shrink: 0;
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+    }
+    .feature-content h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .feature-content p { font-size: 13px; color: var(--text-secondary); }
+
+    /* ── Arch diagram ── */
+    .arch-diagram {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .arch-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: nowrap;
+      min-width: 540px;
+    }
+    .arch-box {
+      flex-shrink: 0;
+      border-radius: 10px;
+      padding: 16px 20px;
+      text-align: center;
+      border: 1px solid;
+      min-width: 120px;
+    }
+    .arch-box-title { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 6px; opacity: .7; }
+    .arch-box-name { font-size: 15px; font-weight: 700; }
+    .arch-box-sub { font-size: 11px; margin-top: 4px; opacity: .6; }
+    .arch-arrow {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      color: var(--text-muted);
+      font-size: 20px;
+    }
+    .arch-notes {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .arch-note {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: rgba(255,255,255,.04);
+      border-radius: 6px;
+      padding: 5px 10px;
+    }
+
+    /* ── Tech badges ── */
+    .tech-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      margin: 3px;
+      color: var(--text-primary);
+    }
+
+    /* ── DB Schema ── */
+    .db-schema {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .db-table-header {
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .db-fields { padding: 4px 0 12px; }
+    .db-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 20px;
+      font-size: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+    .db-field-name { color: var(--accent-blue); min-width: 100px; }
+    .db-field-type { color: var(--accent-purple); min-width: 70px; }
+    .db-field-note { color: var(--text-muted); font-size: 11px; }
+
+    /* ── Test stats ── */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin-bottom: 4px;
+    }
+    .stat-label { font-size: 13px; color: var(--text-secondary); }
+
+    /* ── Test coverage table ── */
+    .test-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 13.5px;
+    }
+    .test-table th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .test-table td {
+      padding: 13px 16px;
+      border-bottom: 1px solid rgba(48,54,61,.5);
+      vertical-align: middle;
+    }
+    .test-table tr:last-child td { border-bottom: none; }
+    .test-table tr:hover td { background: rgba(255,255,255,.02); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .badge-unit    { background: rgba(88,166,255,.15); color: var(--accent-blue); }
+    .badge-comp    { background: rgba(188,140,255,.15); color: var(--accent-purple); }
+    .badge-e2e     { background: rgba(63,185,80,.15); color: var(--accent-green); }
+    .badge-integ   { background: rgba(227,179,65,.15); color: var(--accent-yellow); }
+
+    .tag-list { display: flex; flex-wrap: wrap; gap: 4px; }
+    .tag {
+      background: rgba(255,255,255,.06);
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-size: 11px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: var(--text-secondary);
+    }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+    /* ── Utility ── */
+    .blue   { color: var(--accent-blue); }
+    .purple { color: var(--accent-purple); }
+    .green  { color: var(--accent-green); }
+    .orange { color: var(--accent-orange); }
+    .yellow { color: var(--accent-yellow); }
+    .teal   { color: var(--accent-teal); }
+
+    .bg-blue   { background: rgba(88,166,255,.12); border-color: rgba(88,166,255,.25); }
+    .bg-purple { background: rgba(188,140,255,.12); border-color: rgba(188,140,255,.25); }
+    .bg-green  { background: rgba(63,185,80,.12);  border-color: rgba(63,185,80,.25); }
+    .bg-orange { background: rgba(247,129,102,.12); border-color: rgba(247,129,102,.25); }
+    .bg-yellow { background: rgba(227,179,65,.12); border-color: rgba(227,179,65,.25); }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-badge">Portfolio Project</div>
+  <h1>Trello Clone</h1>
+  <p>A full-stack task management application replicating core Trello features — boards, lists, cards, drag-and-drop, and team-ready auth.</p>
+  <div class="hero-pills">
+    <span class="pill"><span class="pill-dot" style="background:#58a6ff"></span>React 18 + Vite</span>
+    <span class="pill"><span class="pill-dot" style="background:#bc8cff"></span>Node.js / Express</span>
+    <span class="pill"><span class="pill-dot" style="background:#3fb950"></span>PostgreSQL + Prisma</span>
+    <span class="pill"><span class="pill-dot" style="background:#e3b341"></span>JWT Auth</span>
+    <span class="pill"><span class="pill-dot" style="background:#39d0d8"></span>Drag &amp; Drop</span>
+  </div>
+</section>
+
+<!-- ── Nav ── -->
+<div class="nav-wrap">
+  <nav class="nav">
+    <div class="nav-tab active" data-tab="product">Product</div>
+    <div class="nav-tab" data-tab="architecture">Architecture &amp; Tech</div>
+    <div class="nav-tab" data-tab="tests">Tests</div>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════
+     PRODUCT TAB
+════════════════════════════════ -->
+<section id="product" class="section active">
+  <div class="section-header">
+    <div class="section-label blue">Product</div>
+    <div class="section-title">What the app does</div>
+    <p class="section-desc">A kanban-style board manager that lets users organise work into boards, lists, and cards with rich metadata — all draggable and editable in real time.</p>
+  </div>
+
+  <!-- Core workflows -->
+  <div class="grid grid-2" style="margin-bottom:40px">
+
+    <div class="card">
+      <div class="card-icon" style="background:rgba(88,166,255,.12)">📋</div>
+      <h3>Board Management</h3>
+      <ul>
+        <li>Create, rename &amp; delete boards</li>
+        <li>6 preset background colour themes</li>
+        <li>Dashboard grid view of all boards</li>
+        <li>Per-user ownership &amp; isolation</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-icon" style="background:rgba(188,140,255,.12)">🗂️</div>
+      <h3>Lists</h3>
+      <ul>
+        <li>Unlimited lists per board</li>
+        <li>Drag-and-drop horizontal reordering</li>
+        <li>Rename inline</li>
+        <li>Delete with full cascade</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-icon" style="background:rgba(63,185,80,.12)">🃏</div>
+      <h3>Cards</h3>
+      <ul>
+        <li>Create cards with title &amp; description</li>
+        <li>Move cards between lists via drag-and-drop</li>
+        <li>Vertical reordering within a list</li>
+        <li>Inline title editing on the tile</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-icon" style="background:rgba(227,179,65,.12)">🔐</div>
+      <h3>Authentication</h3>
+      <ul>
+        <li>Register with name, email &amp; password</li>
+        <li>Secure bcrypt password hashing</li>
+        <li>Persistent sessions via refresh tokens</li>
+        <li>Auto logout on expiry</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Card detail features -->
+  <h2 style="font-size:20px;font-weight:700;margin-bottom:20px;letter-spacing:-.02em">Card detail features</h2>
+  <div class="card" style="margin-bottom:40px">
+    <div class="feature-row">
+      <div class="feature-icon" style="background:rgba(88,166,255,.12)">📝</div>
+      <div class="feature-content">
+        <h4>Descriptions</h4>
+        <p>Rich-text descriptions on every card, editable directly in the detail modal with save/cancel controls.</p>
+      </div>
+    </div>
+    <div class="feature-row">
+      <div class="feature-icon" style="background:rgba(247,129,102,.12)">📅</div>
+      <div class="feature-content">
+        <h4>Due Dates</h4>
+        <p>Date-picker with colour-coded badges: red for overdue, yellow for today, grey for future dates.</p>
+      </div>
+    </div>
+    <div class="feature-row">
+      <div class="feature-icon" style="background:rgba(63,185,80,.12)">🏷️</div>
+      <div class="feature-content">
+        <h4>Labels</h4>
+        <p>Coloured labels with custom text — choose from 6 preset colours (green, yellow, orange, red, purple, blue). Multiple labels per card.</p>
+      </div>
+    </div>
+    <div class="feature-row">
+      <div class="feature-icon" style="background:rgba(188,140,255,.12)">✅</div>
+      <div class="feature-content">
+        <h4>Checklists</h4>
+        <p>Named checklists with multiple items, checkbox completion tracking, and a progress bar that turns green at 100%.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- UX highlights -->
+  <h2 style="font-size:20px;font-weight:700;margin-bottom:20px;letter-spacing:-.02em">UX highlights</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="card-icon" style="background:rgba(57,208,216,.12)">⚡</div>
+      <h3>Optimistic UI</h3>
+      <p>Changes appear immediately. On server error the UI rolls back automatically — no loading spinners for common actions.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background:rgba(88,166,255,.12)">🔔</div>
+      <h3>Toast Notifications</h3>
+      <p>Context-aware toasts for success and error states via react-hot-toast — never leaves the user guessing.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background:rgba(63,185,80,.12)">🛡️</div>
+      <h3>Protected Routes</h3>
+      <p>Unauthenticated users are redirected to login. Sessions persist across page refreshes via token refresh.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════
+     ARCHITECTURE TAB
+════════════════════════════════ -->
+<section id="architecture" class="section">
+  <div class="section-header">
+    <div class="section-label purple">Architecture &amp; Tech</div>
+    <div class="section-title">How it's built</div>
+    <p class="section-desc">A classic three-tier architecture with a React SPA, an Express REST API, and a PostgreSQL relational database — wired together with JWT-based auth and float-position drag-and-drop.</p>
+  </div>
+
+  <!-- Arch diagram -->
+  <div class="arch-diagram">
+    <div style="text-align:center;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:24px">System Overview</div>
+    <div class="arch-flow">
+      <div class="arch-box bg-blue">
+        <div class="arch-box-title">Client</div>
+        <div class="arch-box-name blue">React SPA</div>
+        <div class="arch-box-sub">Vite · Tailwind</div>
+      </div>
+      <div class="arch-arrow">
+        <div style="text-align:center;font-size:10px;color:var(--text-muted);line-height:1.4">REST<br>JSON<br>→→→</div>
+      </div>
+      <div class="arch-box bg-purple">
+        <div class="arch-box-title">Server</div>
+        <div class="arch-box-name purple">Express API</div>
+        <div class="arch-box-sub">Node.js · JWT</div>
+      </div>
+      <div class="arch-arrow">
+        <div style="text-align:center;font-size:10px;color:var(--text-muted);line-height:1.4">Prisma<br>ORM<br>→→→</div>
+      </div>
+      <div class="arch-box bg-green">
+        <div class="arch-box-title">Database</div>
+        <div class="arch-box-name green">PostgreSQL</div>
+        <div class="arch-box-sub">7 tables</div>
+      </div>
+    </div>
+    <div class="arch-notes">
+      <div class="arch-note">🍪 Refresh token in httpOnly cookie</div>
+      <div class="arch-note">🔑 Access token in React state (XSS-safe)</div>
+      <div class="arch-note">🔄 Axios interceptor auto-refreshes token</div>
+      <div class="arch-note">⚖️ Float positions for drag-and-drop ordering</div>
+    </div>
+  </div>
+
+  <!-- Frontend / Backend -->
+  <div class="grid grid-2" style="margin-bottom:40px">
+    <div class="card">
+      <div class="section-label blue" style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px">Frontend</div>
+      <div class="feature-row" style="padding:10px 0">
+        <div class="feature-icon" style="background:rgba(88,166,255,.1);font-size:14px">⚛️</div>
+        <div class="feature-content">
+          <h4>React 18</h4>
+          <p>Hooks, context, protected routes with React Router 6</p>
+        </div>
+      </div>
+      <div class="feature-row" style="padding:10px 0">
+        <div class="feature-icon" style="background:rgba(88,166,255,.1);font-size:14px">⚡</div>
+        <div class="feature-content">
+          <h4>Vite 5</h4>
+          <p>Lightning-fast HMR and optimised production builds</p>
+        </div>
+      </div>
+      <div class="feature-row" style="padding:10px 0">
+        <div class="feature-icon" style="background:rgba(88,166,255,.1);font-size:14px">🎨</div>
+        <div class="feature-content">
+          <h4>Tailwind CSS 3</h4>
+          <p>Utility-first styling, no custom CSS build step</p>
+        </div>
+      </div>
+      <div class="feature-row" style="padding:10px 0;border-bottom:none">
+        <div class="feature-icon" style="background:rgba(88,166,255,.1);font-size:14px">🤝</div>
+        <div class="feature-content">
+          <h4>@hello-pangea/dnd</h4>
+          <p>Maintained fork of react-beautiful-dnd for drag-and-drop</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-label purple" style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px">Backend</div>
+      <div class="feature-row" style="padding:10px 0">
+        <div class="feature-icon" style="background:rgba(188,140,255,.1);font-size:14px">🟢</div>
+        <div class="feature-content">
+          <h4>Node.js + Express 4</h4>
+          <p>REST API, CORS, cookie-parser middleware</p>
+        </div>
+      </div>
+      <div class="feature-row" style="padding:10px 0">
+        <div class="feature-icon" style="background:rgba(188,140,255,.1);font-size:14px">🗄️</div>
+        <div class="feature-content">
+          <h4>Prisma 6 ORM</h4>
+          <p>Schema migrations, type-safe queries, cascading deletes</p>
+        </div>
+      </div>
+      <div class="feature-row" style="padding:10px 0">
+        <div class="feature-icon" style="background:rgba(188,140,255,.1);font-size:14px">🔏</div>
+        <div class="feature-content">
+          <h4>JWT + bcryptjs</h4>
+          <p>15 min access tokens, 7-day refresh tokens, 10-round hashing</p>
+        </div>
+      </div>
+      <div class="feature-row" style="padding:10px 0;border-bottom:none">
+        <div class="feature-icon" style="background:rgba(188,140,255,.1);font-size:14px">✔️</div>
+        <div class="feature-content">
+          <h4>Zod</h4>
+          <p>Schema validation on all incoming request bodies</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth flow -->
+  <h2 style="font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:-.02em">Auth &amp; session flow</h2>
+  <div class="card" style="margin-bottom:40px">
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div class="feature-row">
+        <div class="feature-icon" style="background:rgba(88,166,255,.1);font-size:13px;font-weight:800;color:var(--accent-blue)">1</div>
+        <div class="feature-content">
+          <h4>Login / Register</h4>
+          <p>Server returns a short-lived <strong>access token</strong> (15 min) in the JSON body and sets a <strong>refresh token</strong> (7 days) in an httpOnly cookie.</p>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="feature-icon" style="background:rgba(188,140,255,.1);font-size:13px;font-weight:800;color:var(--accent-purple)">2</div>
+        <div class="feature-content">
+          <h4>Requests</h4>
+          <p>The React <code>AuthContext</code> stores the access token in memory. Axios attaches it as a <code>Bearer</code> header on every request.</p>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="feature-icon" style="background:rgba(63,185,80,.1);font-size:13px;font-weight:800;color:var(--accent-green)">3</div>
+        <div class="feature-content">
+          <h4>Token refresh</h4>
+          <p>On a <strong>401</strong>, the Axios response interceptor silently calls <code>/api/auth/refresh</code> (cookie is sent automatically), gets a new access token, and replays all queued requests.</p>
+        </div>
+      </div>
+      <div class="feature-row" style="border-bottom:none">
+        <div class="feature-icon" style="background:rgba(247,129,102,.1);font-size:13px;font-weight:800;color:var(--accent-orange)">4</div>
+        <div class="feature-content">
+          <h4>Logout</h4>
+          <p>Server clears the cookie; client clears the in-memory token. Both sides are invalidated in one request.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DB schema -->
+  <h2 style="font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:-.02em">Database schema — 7 tables</h2>
+  <div class="grid grid-2" style="margin-bottom:16px">
+    <div class="db-schema">
+      <div class="db-table-header" style="color:var(--accent-blue)">
+        <span>👤</span> User
+      </div>
+      <div class="db-fields">
+        <div class="db-field"><span class="db-field-name">id</span><span class="db-field-type">String</span><span class="db-field-note">CUID, PK</span></div>
+        <div class="db-field"><span class="db-field-name">name</span><span class="db-field-type">String</span></div>
+        <div class="db-field"><span class="db-field-name">email</span><span class="db-field-type">String</span><span class="db-field-note">unique</span></div>
+        <div class="db-field"><span class="db-field-name">password</span><span class="db-field-type">String</span><span class="db-field-note">bcrypt hash</span></div>
+      </div>
+    </div>
+    <div class="db-schema">
+      <div class="db-table-header" style="color:var(--accent-purple)">
+        <span>📋</span> Board
+      </div>
+      <div class="db-fields">
+        <div class="db-field"><span class="db-field-name">id</span><span class="db-field-type">String</span><span class="db-field-note">CUID, PK</span></div>
+        <div class="db-field"><span class="db-field-name">title</span><span class="db-field-type">String</span></div>
+        <div class="db-field"><span class="db-field-name">color</span><span class="db-field-type">String</span></div>
+        <div class="db-field"><span class="db-field-name">position</span><span class="db-field-type">Float</span></div>
+        <div class="db-field"><span class="db-field-name">ownerId</span><span class="db-field-type">String</span><span class="db-field-note">FK → User</span></div>
+      </div>
+    </div>
+    <div class="db-schema">
+      <div class="db-table-header" style="color:var(--accent-green)">
+        <span>🗂️</span> List
+      </div>
+      <div class="db-fields">
+        <div class="db-field"><span class="db-field-name">id</span><span class="db-field-type">String</span><span class="db-field-note">CUID, PK</span></div>
+        <div class="db-field"><span class="db-field-name">title</span><span class="db-field-type">String</span></div>
+        <div class="db-field"><span class="db-field-name">position</span><span class="db-field-type">Float</span><span class="db-field-note">drag ordering</span></div>
+        <div class="db-field"><span class="db-field-name">boardId</span><span class="db-field-type">String</span><span class="db-field-note">FK → Board</span></div>
+      </div>
+    </div>
+    <div class="db-schema">
+      <div class="db-table-header" style="color:var(--accent-yellow)">
+        <span>🃏</span> Card
+      </div>
+      <div class="db-fields">
+        <div class="db-field"><span class="db-field-name">id</span><span class="db-field-type">String</span><span class="db-field-note">CUID, PK</span></div>
+        <div class="db-field"><span class="db-field-name">title</span><span class="db-field-type">String</span></div>
+        <div class="db-field"><span class="db-field-name">description</span><span class="db-field-type">String?</span></div>
+        <div class="db-field"><span class="db-field-name">dueDate</span><span class="db-field-type">DateTime?</span></div>
+        <div class="db-field"><span class="db-field-name">position</span><span class="db-field-type">Float</span><span class="db-field-note">drag ordering</span></div>
+        <div class="db-field"><span class="db-field-name">listId</span><span class="db-field-type">String</span><span class="db-field-note">FK → List</span></div>
+      </div>
+    </div>
+    <div class="db-schema">
+      <div class="db-table-header" style="color:var(--accent-orange)">
+        <span>🏷️</span> Label
+      </div>
+      <div class="db-fields">
+        <div class="db-field"><span class="db-field-name">id</span><span class="db-field-type">String</span><span class="db-field-note">CUID, PK</span></div>
+        <div class="db-field"><span class="db-field-name">text</span><span class="db-field-type">String</span></div>
+        <div class="db-field"><span class="db-field-name">color</span><span class="db-field-type">String</span></div>
+        <div class="db-field"><span class="db-field-name">cardId</span><span class="db-field-type">String</span><span class="db-field-note">FK → Card</span></div>
+      </div>
+    </div>
+    <div class="db-schema">
+      <div class="db-table-header" style="color:var(--accent-teal)">
+        <span>✅</span> Checklist + ChecklistItem
+      </div>
+      <div class="db-fields">
+        <div class="db-field"><span class="db-field-name">id</span><span class="db-field-type">String</span><span class="db-field-note">PK</span></div>
+        <div class="db-field"><span class="db-field-name">title</span><span class="db-field-type">String</span><span class="db-field-note">Checklist only</span></div>
+        <div class="db-field"><span class="db-field-name">text</span><span class="db-field-type">String</span><span class="db-field-note">Item only</span></div>
+        <div class="db-field"><span class="db-field-name">checked</span><span class="db-field-type">Boolean</span><span class="db-field-note">Item only</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p style="font-size:13.5px;color:var(--text-secondary)">
+      All relationships use <strong style="color:var(--text-primary)">cascading deletes</strong> — deleting a Board removes all its Lists, which in turn removes all Cards, Labels, Checklists, and ChecklistItems.
+      Drag-and-drop order is stored as a <strong style="color:var(--text-primary)">Float</strong>; reordering inserts a card at the midpoint <code style="font-family:'SF Mono',monospace;font-size:12px;color:var(--accent-purple)">(before + after) / 2</code>, so no full-table re-index is ever needed.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════
+     TESTS TAB
+════════════════════════════════ -->
+<section id="tests" class="section">
+  <div class="section-header">
+    <div class="section-label green">Tests</div>
+    <div class="section-title">Three-layer test strategy</div>
+    <p class="section-desc">Server integration tests, React component tests, and Playwright end-to-end tests — all isolated from production data by design.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-number blue">5</div>
+      <div class="stat-label">Server test files</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number purple">5</div>
+      <div class="stat-label">Client test files</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number green">4</div>
+      <div class="stat-label">E2E test suites</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number yellow">2,558</div>
+      <div class="stat-label">Lines of test code</div>
+    </div>
+  </div>
+
+  <!-- Layer 1: Server -->
+  <h2 style="font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:-.02em">
+    <span class="badge badge-integ">Integration</span>&nbsp; Server Tests — Jest + Supertest
+  </h2>
+  <table class="test-table" style="margin-bottom:40px">
+    <thead>
+      <tr>
+        <th>File</th>
+        <th>Lines</th>
+        <th>What it covers</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-blue);font-size:12px">auth.test.js</span></td>
+        <td style="color:var(--text-muted)">166</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">register</span><span class="tag">login</span><span class="tag">refresh</span><span class="tag">logout</span>
+            <span class="tag">duplicate email</span><span class="tag">8-char min password</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-blue);font-size:12px">boards.test.js</span></td>
+        <td style="color:var(--text-muted)">206</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">CRUD</span><span class="tag">user isolation</span><span class="tag">color presets</span><span class="tag">cascading delete</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-blue);font-size:12px">cards.test.js</span></td>
+        <td style="color:var(--text-muted)">408</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">create / update</span><span class="tag">cross-list move</span><span class="tag">position calc</span>
+            <span class="tag">labels</span><span class="tag">checklists</span><span class="tag">cascade delete</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-blue);font-size:12px">lists.test.js</span></td>
+        <td style="color:var(--text-muted)">163</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">CRUD</span><span class="tag">reorder</span><span class="tag">rename</span><span class="tag">delete cascade</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-blue);font-size:12px">middleware.test.js</span></td>
+        <td style="color:var(--text-muted)">71</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">401 on missing token</span><span class="tag">expired JWT</span><span class="tag">malformed Bearer</span>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Layer 2: Client -->
+  <h2 style="font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:-.02em">
+    <span class="badge badge-comp">Component</span>&nbsp; Client Tests — Vitest + React Testing Library
+  </h2>
+  <table class="test-table" style="margin-bottom:40px">
+    <thead>
+      <tr>
+        <th>File</th>
+        <th>Lines</th>
+        <th>What it covers</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-purple);font-size:12px">AuthContext.test.jsx</span></td>
+        <td style="color:var(--text-muted)">199</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">token refresh on mount</span><span class="tag">user state</span><span class="tag">login / logout flows</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-purple);font-size:12px">BoardCard.test.jsx</span></td>
+        <td style="color:var(--text-muted)">178</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">tile rendering</span><span class="tag">colour display</span><span class="tag">delete action</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-purple);font-size:12px">BoardView.test.jsx</span></td>
+        <td style="color:var(--text-muted)">250</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">list rendering</span><span class="tag">card creation</span><span class="tag">drag-drop state</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-purple);font-size:12px">CardModal.test.jsx</span></td>
+        <td style="color:var(--text-muted)">356</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">inline editing</span><span class="tag">labels</span><span class="tag">checklists</span><span class="tag">due dates</span><span class="tag">error handling</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-purple);font-size:12px">DueDateBadge.test.jsx</span></td>
+        <td style="color:var(--text-muted)">86</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">overdue → red</span><span class="tag">today → yellow</span><span class="tag">future → grey</span>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Layer 3: E2E -->
+  <h2 style="font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:-.02em">
+    <span class="badge badge-e2e">E2E</span>&nbsp; End-to-End Tests — Playwright
+  </h2>
+  <table class="test-table" style="margin-bottom:40px">
+    <thead>
+      <tr>
+        <th>Suite</th>
+        <th>Lines</th>
+        <th>Scenarios</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-green);font-size:12px">auth.spec.ts</span></td>
+        <td style="color:var(--text-muted)">70</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">register</span><span class="tag">login</span><span class="tag">logout</span><span class="tag">redirect guards</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-green);font-size:12px">boards.spec.ts</span></td>
+        <td style="color:var(--text-muted)">58</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">create board</span><span class="tag">delete board</span><span class="tag">navigate to board</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-green);font-size:12px">lists-cards.spec.ts</span></td>
+        <td style="color:var(--text-muted)">93</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">add list</span><span class="tag">rename list</span><span class="tag">add card</span><span class="tag">delete cascade</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'SF Mono',monospace;color:var(--accent-green);font-size:12px">card-detail.spec.ts</span></td>
+        <td style="color:var(--text-muted)">152</td>
+        <td>
+          <div class="tag-list">
+            <span class="tag">modal open</span><span class="tag">title/desc edit</span><span class="tag">due dates</span><span class="tag">labels</span><span class="tag">checklists</span>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Safety callout -->
+  <div class="card" style="border-color:rgba(247,129,102,.3);background:rgba(247,129,102,.06)">
+    <div style="display:flex;align-items:flex-start;gap:14px">
+      <span style="font-size:22px;flex-shrink:0">⚠️</span>
+      <div>
+        <h3 style="margin-bottom:8px;color:var(--accent-orange)">Test database safety</h3>
+        <p style="font-size:13.5px;color:var(--text-secondary)">
+          The server and E2E test suites <strong style="color:var(--text-primary)">truncate all tables</strong> between runs.
+          They must point at a dedicated test database configured in <code style="font-family:'SF Mono',monospace;font-size:12px;color:var(--accent-purple)">server/.env.test</code>.
+          Never run these tests against a development or production database.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Config summary -->
+  <h2 style="font-size:18px;font-weight:700;margin-bottom:20px;letter-spacing:-.02em">Test configuration at a glance</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="section-label" style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-yellow);margin-bottom:12px">Jest (Server)</div>
+      <ul>
+        <li>Node environment</li>
+        <li>ESM module support</li>
+        <li>1 worker (sequential)</li>
+        <li>Supertest for HTTP assertions</li>
+        <li>Setup file: table truncation</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="section-label" style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-purple);margin-bottom:12px">Vitest (Client)</div>
+      <ul>
+        <li>jsdom environment</li>
+        <li>Globals enabled</li>
+        <li>vi.mock() for all API calls</li>
+        <li>React Testing Library</li>
+        <li>Setup file for matchers</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="section-label" style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-green);margin-bottom:12px">Playwright (E2E)</div>
+      <ul>
+        <li>baseURL: localhost:5173</li>
+        <li>Sequential (no parallelism)</li>
+        <li>HTML report + screenshots</li>
+        <li>Retry tracing enabled</li>
+        <li>Auto-starts dev servers</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+  Trello Clone · Portfolio Project · React + Node.js + PostgreSQL
+</footer>
+
+<script>
+  const tabs = document.querySelectorAll('.nav-tab');
+  const sections = document.querySelectorAll('.section');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+      tabs.forEach(t => t.classList.remove('active'));
+      sections.forEach(s => s.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(target).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

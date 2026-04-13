@@ -6,6 +6,14 @@ import {
   createTestCard,
 } from './setup.js';
 
+async function createTestComment(token, cardId, text = 'Test comment') {
+  const res = await request
+    .post(`/api/cards/${cardId}/comments`)
+    .set('Authorization', `Bearer ${token}`)
+    .send({ text });
+  return res.body.data;
+}
+
 describe('POST /api/lists/:listId/cards', () => {
   test('creates a card with auto-positioned value', async () => {
     const { token } = await createTestUser();
@@ -404,5 +412,190 @@ describe('Checklist Items on /api/cards/:cardId/checklists/:checklistId/items', 
       (cl) => cl.id === checklistId
     );
     expect(checklist.items).toHaveLength(0);
+  });
+});
+
+describe('Comments on /api/cards/:cardId/comments', () => {
+  let token, card;
+
+  beforeEach(async () => {
+    const user = await createTestUser();
+    token = user.token;
+    const board = await createTestBoard(token);
+    const list = await createTestList(token, board.id);
+    card = await createTestCard(token, list.id);
+  });
+
+  describe('POST /api/cards/:cardId/comments', () => {
+    test('creates a comment and returns 201 with commenter name', async () => {
+      const res = await request
+        .post(`/api/cards/${card.id}/comments`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ text: 'Hello world' });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data.text).toBe('Hello world');
+      expect(res.body.data.cardId).toBe(card.id);
+      expect(res.body.data.user).toHaveProperty('name');
+      expect(res.body.data.user).toHaveProperty('id');
+    });
+
+    test('validates text is required', async () => {
+      const res = await request
+        .post(`/api/cards/${card.id}/comments`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body).toHaveProperty('error');
+    });
+
+    test('validates text max 1000 chars', async () => {
+      const res = await request
+        .post(`/api/cards/${card.id}/comments`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ text: 'a'.repeat(1001) });
+
+      expect(res.status).toBe(400);
+      expect(res.body).toHaveProperty('error');
+    });
+
+    test('returns 403 when card belongs to another user', async () => {
+      const other = await createTestUser({ email: 'other@example.com' });
+
+      const res = await request
+        .post(`/api/cards/${card.id}/comments`)
+        .set('Authorization', `Bearer ${other.token}`)
+        .send({ text: 'Sneaky comment' });
+
+      expect(res.status).toBe(403);
+    });
+
+    test('returns 404 for unknown card', async () => {
+      const res = await request
+        .post('/api/cards/nonexistent-id/comments')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ text: 'Hello' });
+
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('GET /api/cards/:cardId/comments', () => {
+    test('returns comments newest-first', async () => {
+      await createTestComment(token, card.id, 'First');
+      await createTestComment(token, card.id, 'Second');
+
+      const res = await request
+        .get(`/api/cards/${card.id}/comments`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data[0].text).toBe('Second');
+      expect(res.body.data[1].text).toBe('First');
+    });
+
+    test('includes commenter name in response', async () => {
+      await createTestComment(token, card.id, 'A comment');
+
+      const res = await request
+        .get(`/api/cards/${card.id}/comments`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data[0].user).toHaveProperty('name');
+      expect(res.body.data[0].user).toHaveProperty('id');
+    });
+
+    test('returns hasMore: false when fewer than 20 comments', async () => {
+      await createTestComment(token, card.id, 'Solo comment');
+
+      const res = await request
+        .get(`/api/cards/${card.id}/comments`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.meta.hasMore).toBe(false);
+    });
+
+    test('returns 403 when card belongs to another user', async () => {
+      const other = await createTestUser({ email: 'eavesdropper@example.com' });
+
+      const res = await request
+        .get(`/api/cards/${card.id}/comments`)
+        .set('Authorization', `Bearer ${other.token}`);
+
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe('DELETE /api/cards/:cardId/comments/:commentId', () => {
+    test('deletes own comment', async () => {
+      const comment = await createTestComment(token, card.id, 'To be deleted');
+
+      const res = await request
+        .delete(`/api/cards/${card.id}/comments/${comment.id}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+
+      const listRes = await request
+        .get(`/api/cards/${card.id}/comments`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(listRes.body.data).toHaveLength(0);
+    });
+
+    test('returns 403 when trying to delete another user comment', async () => {
+      const other = await createTestUser({ email: 'other2@example.com' });
+      // other user can't even post on this card, so we create the comment via prisma directly
+      const { prisma } = await import('./setup.js');
+      const direct = await prisma.comment.create({
+        data: { text: 'Other comment', cardId: card.id, userId: other.user.id },
+      });
+
+      const res = await request
+        .delete(`/api/cards/${card.id}/comments/${direct.id}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(403);
+    });
+
+    test('returns 404 for unknown comment', async () => {
+      const res = await request
+        .delete(`/api/cards/${card.id}/comments/nonexistent-id`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('PATCH /api/cards/:cardId/comments/:commentId', () => {
+    test('updates own comment text', async () => {
+      const comment = await createTestComment(token, card.id, 'Original text');
+
+      const res = await request
+        .patch(`/api/cards/${card.id}/comments/${comment.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ text: 'Updated text' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.text).toBe('Updated text');
+    });
+
+    test('returns 403 when trying to update another user comment', async () => {
+      const other = await createTestUser({ email: 'other3@example.com' });
+      const { prisma } = await import('./setup.js');
+      const direct = await prisma.comment.create({
+        data: { text: 'Other comment', cardId: card.id, userId: other.user.id },
+      });
+
+      const res = await request
+        .patch(`/api/cards/${card.id}/comments/${direct.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ text: 'Hijacked' });
+
+      expect(res.status).toBe(403);
+    });
   });
 });

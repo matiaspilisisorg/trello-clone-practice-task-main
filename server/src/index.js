@@ -18,6 +18,7 @@ app.use(cors({
     if (!origin) return callback(null, true);
     const allowed = [
       process.env.CLIENT_URL,
+      'http://localhost:5174',
       'http://antes-mac-mini.local:5173',
       'http://192.168.1.50:5173',
     ];

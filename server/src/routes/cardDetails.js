@@ -9,6 +9,10 @@ import {
   createChecklistItem,
   updateChecklistItem,
   deleteChecklistItem,
+  getComments,
+  createComment,
+  updateComment,
+  deleteComment,
 } from '../controllers/cardDetailController.js';
 
 const router = Router({ mergeParams: true });
@@ -26,5 +30,10 @@ router.delete('/checklists/:checklistId', deleteChecklist);
 router.post('/checklists/:checklistId/items', createChecklistItem);
 router.patch('/checklists/:checklistId/items/:itemId', updateChecklistItem);
 router.delete('/checklists/:checklistId/items/:itemId', deleteChecklistItem);
+
+router.get('/comments', getComments);
+router.post('/comments', createComment);
+router.patch('/comments/:commentId', updateComment);
+router.delete('/comments/:commentId', deleteComment);
 
 export default router;

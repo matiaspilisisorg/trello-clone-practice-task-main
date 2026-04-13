@@ -8,12 +8,13 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String    @id @default(cuid())
+  email     String    @unique
   password  String
   name      String
   boards    Board[]
-  createdAt DateTime @default(now())
+  comments  Comment[]
+  createdAt DateTime  @default(now())
 }
 
 model Board {
@@ -46,6 +47,7 @@ model Card {
   listId      String
   labels      Label[]
   checklists  Checklist[]
+  comments    Comment[]
   createdAt   DateTime    @default(now())
 }
 
@@ -71,4 +73,17 @@ model ChecklistItem {
   checked     Boolean   @default(false)
   checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
   checklistId String
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@index([cardId, createdAt])
 }

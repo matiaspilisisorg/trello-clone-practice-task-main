@@ -2,7 +2,246 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Design Tokens — Dark (Default) ────────────────────────── */
+:root {
+  /* Core backgrounds */
+  --bg-base:      #080a0f;
+  --bg-surface:   #0d1117;
+  --bg-elevated:  #111827;
+  --bg-card:      #161b22;
+
+  /* Glass / panel surfaces */
+  --bg-glass:       rgba(8,  10, 15,  0.82);
+  --bg-glass-panel: rgba(13, 17, 23,  0.75);
+  --bg-panel:       rgba(13, 17, 23,  0.88);
+  --bg-subheader:   rgba(8,  10, 15,  0.70);
+  --bg-form-card:   rgba(13, 17, 23,  0.72);
+  --bg-dropdown:    rgba(10, 13, 20,  0.97);
+
+  /* Subtle / interactive surfaces */
+  --bg-subtle:  rgba(255, 255, 255, 0.03);
+  --bg-hover:   rgba(255, 255, 255, 0.05);
+  --bg-active:  rgba(255, 255, 255, 0.08);
+  --bg-stat:    rgba(255, 255, 255, 0.06);
+
+  /* Borders */
+  --border-subtle:  rgba(240, 246, 252, 0.07);
+  --border-muted:   rgba(240, 246, 252, 0.12);
+  --border-accent:  rgba(99,  102, 241, 0.40);
+  --border-form:    rgba(240, 246, 252, 0.08);
+  --border-dashed:  rgba(255, 255, 255, 0.10);
+
+  /* Glows */
+  --glow-indigo: rgba(99,  102, 241, 0.30);
+  --glow-cyan:   rgba(6,   182, 212, 0.30);
+  --glow-red:    rgba(239, 68,  68,  0.35);
+  --glow-green:  rgba(34,  197, 94,  0.30);
+
+  /* Text */
+  --text-primary:    #e2e8f0;
+  --text-secondary:  #94a3b8;
+  --text-muted:      #475569;
+  --text-card:       #cbd5e1;
+  --text-link:       #818cf8;
+  --text-link-hover: #a5b4fc;
+  --text-danger:     #f87171;
+}
+
+/* ─── Design Tokens — Light ──────────────────────────────────── */
+[data-theme="light"] {
+  /* Core backgrounds */
+  --bg-base:      #eef2f7;
+  --bg-surface:   #ffffff;
+  --bg-elevated:  #f8fafc;
+  --bg-card:      #ffffff;
+
+  /* Glass / panel surfaces */
+  --bg-glass:       rgba(248, 250, 252, 0.90);
+  --bg-glass-panel: rgba(255, 255, 255, 0.80);
+  --bg-panel:       rgba(255, 255, 255, 0.96);
+  --bg-subheader:   rgba(248, 250, 252, 0.90);
+  --bg-form-card:   rgba(255, 255, 255, 0.90);
+  --bg-dropdown:    rgba(255, 255, 255, 0.98);
+
+  /* Subtle / interactive surfaces */
+  --bg-subtle:  rgba(15, 23, 42, 0.04);
+  --bg-hover:   rgba(15, 23, 42, 0.05);
+  --bg-active:  rgba(15, 23, 42, 0.08);
+  --bg-stat:    rgba(15, 23, 42, 0.06);
+
+  /* Borders */
+  --border-subtle:  rgba(15, 23, 42, 0.07);
+  --border-muted:   rgba(15, 23, 42, 0.13);
+  --border-accent:  rgba(99, 102, 241, 0.45);
+  --border-form:    rgba(15, 23, 42, 0.09);
+  --border-dashed:  rgba(15, 23, 42, 0.15);
+
+  /* Glows (softer on light backgrounds) */
+  --glow-indigo: rgba(99,  102, 241, 0.10);
+  --glow-cyan:   rgba(6,   182, 212, 0.10);
+  --glow-red:    rgba(239, 68,  68,  0.12);
+  --glow-green:  rgba(34,  197, 94,  0.10);
+
+  /* Text */
+  --text-primary:    #0f172a;
+  --text-secondary:  #334155;
+  --text-muted:      #64748b;
+  --text-card:       #1e293b;
+  --text-link:       #4f46e5;
+  --text-link-hover: #3730a3;
+  --text-danger:     #ef4444;
+}
+
+/* ─── Base ───────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ─── Custom Scrollbar ───────────────────────────────────────── */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: var(--bg-surface); }
+::-webkit-scrollbar-thumb  { background: rgba(99,102,241,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.55); }
+
+/* ─── Date picker icon tint ──────────────────────────────────── */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.6) sepia(1) saturate(4) hue-rotate(200deg);
+  opacity: 0.6;
+  cursor: pointer;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+
+[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: none;
+  opacity: 0.5;
+}
+[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.9;
+}
+
+/* ─── Checkbox accent ────────────────────────────────────────── */
+input[type="checkbox"] { accent-color: #6366f1; }
+
+/* ─── Subtle grid overlay ────────────────────────────────────── */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+  background-size: 52px 52px;
+}
+[data-theme="light"] .bg-grid {
+  background-image:
+    linear-gradient(rgba(99,102,241,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.06) 1px, transparent 1px);
+}
+
+/* ─── Custom Utilities ───────────────────────────────────────── */
+@layer utilities {
+  /* Gradient text accent */
+  .text-gradient {
+    background: linear-gradient(135deg, #818cf8 0%, #22d3ee 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glassmorphism surfaces */
+  .glass {
+    background: var(--bg-glass);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+  .glass-panel {
+    background: var(--bg-glass-panel);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* Input */
+  .input-cyber {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-muted);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .input-cyber::placeholder { color: var(--text-muted); }
+  .input-cyber:focus {
+    border-color: rgba(99,102,241,0.65);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+  }
+
+  /* Primary gradient button */
+  .btn-cyber {
+    background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: opacity 0.15s, box-shadow 0.15s, transform 0.1s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-cyber::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(255,255,255,0.1), transparent);
+    pointer-events: none;
+  }
+  .btn-cyber:hover {
+    opacity: 0.92;
+    box-shadow: 0 0 24px rgba(99,102,241,0.45);
+    transform: translateY(-1px);
+  }
+  .btn-cyber:active  { transform: translateY(0); opacity: 1; }
+  .btn-cyber:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* Ghost button */
+  .btn-ghost-cyber {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .btn-ghost-cyber:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-muted);
+  }
+
+  /* Card surface */
+  .card-cyber {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .card-cyber:hover {
+    border-color: var(--border-accent);
+    box-shadow: 0 0 20px var(--glow-indigo), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  /* Panel surface (list columns) */
+  .panel-cyber {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Section heading style */
+  .section-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
 }

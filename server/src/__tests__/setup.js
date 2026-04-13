@@ -85,6 +85,7 @@ async function cleanDatabase() {
   await prisma.checklistItem.deleteMany();
   await prisma.checklist.deleteMany();
   await prisma.label.deleteMany();
+  await prisma.comment.deleteMany();
   await prisma.card.deleteMany();
   await prisma.list.deleteMany();
   await prisma.board.deleteMany();

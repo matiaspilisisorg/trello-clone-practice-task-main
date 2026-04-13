@@ -11,14 +11,47 @@ const updateBoardSchema = z.object({
   color: z.string().optional(),
 });
 
+async function getBoardStats(userId) {
+  const rows = await prisma.$queryRaw`
+    SELECT
+      b.id                                                         AS "boardId",
+      COUNT(DISTINCT l.id)::int                                    AS "listCount",
+      COUNT(DISTINCT c.id)::int                                    AS "totalCards",
+      COUNT(DISTINCT CASE
+        WHEN c."dueDate" IS NOT NULL
+         AND c."dueDate" < NOW() AT TIME ZONE 'UTC'
+        THEN c.id END)::int                                        AS "pastDue",
+      COUNT(DISTINCT CASE
+        WHEN c."dueDate" IS NOT NULL
+         AND c."dueDate" >= NOW() AT TIME ZONE 'UTC'
+         AND c."dueDate" <= (NOW() AT TIME ZONE 'UTC' + INTERVAL '5 days')
+        THEN c.id END)::int                                        AS "dueSoon"
+    FROM "Board" b
+    LEFT JOIN "List" l ON l."boardId" = b.id
+    LEFT JOIN "Card" c ON c."listId" = l.id
+    WHERE b."ownerId" = ${userId}
+    GROUP BY b.id
+  `;
+
+  return Object.fromEntries(rows.map((r) => [r.boardId, r]));
+}
+
 export async function getBoards(req, res, next) {
   try {
-    const boards = await prisma.board.findMany({
-      where: { ownerId: req.userId },
-      orderBy: { createdAt: 'desc' },
-    });
+    const [boards, statsMap] = await Promise.all([
+      prisma.board.findMany({
+        where: { ownerId: req.userId },
+        orderBy: { createdAt: 'desc' },
+      }),
+      getBoardStats(req.userId),
+    ]);
 
-    res.json({ data: boards });
+    const data = boards.map((board) => ({
+      ...board,
+      stats: statsMap[board.id] ?? { listCount: 0, totalCards: 0, pastDue: 0, dueSoon: 0 },
+    }));
+
+    res.json({ data });
   } catch (error) {
     next(error);
   }

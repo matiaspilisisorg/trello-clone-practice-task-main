@@ -28,59 +28,122 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center px-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Log in to Trello Clone</h1>
-          <p className="text-gray-500 mt-2 text-sm">Enter your credentials to continue</p>
+    <div
+      className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
+      style={{ background: 'var(--bg-base)' }}
+    >
+      {/* Radial glows */}
+      <div style={{
+        position: 'fixed', top: '-20%', left: '-15%',
+        width: '55%', height: '55%', pointerEvents: 'none',
+        background: 'radial-gradient(ellipse, rgba(99,102,241,0.13) 0%, transparent 70%)',
+      }} />
+      <div style={{
+        position: 'fixed', bottom: '-20%', right: '-15%',
+        width: '50%', height: '50%', pointerEvents: 'none',
+        background: 'radial-gradient(ellipse, rgba(6,182,212,0.09) 0%, transparent 70%)',
+      }} />
+
+      {/* Grid overlay */}
+      <div className="bg-grid fixed inset-0 pointer-events-none" />
+
+      <div className="w-full max-w-sm relative z-10">
+        {/* Brand mark */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-3 mb-5">
+            <div
+              className="w-11 h-11 rounded-2xl flex items-center justify-center"
+              style={{
+                background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
+                boxShadow: '0 0 28px rgba(99,102,241,0.5), 0 0 56px rgba(99,102,241,0.2)',
+              }}
+            >
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
+                  d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+              </svg>
+            </div>
+            <span className="font-display text-2xl font-bold text-gradient">Taskboard</span>
+          </div>
+          <h1 className="font-display text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+            Welcome back
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Sign in to continue to your workspace
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              autoComplete="email"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-            />
-          </div>
+        {/* Form card */}
+        <div
+          className="rounded-2xl p-8"
+          style={{
+            background: 'var(--bg-form-card)',
+            backdropFilter: 'blur(24px)',
+            border: '1px solid var(--border-form)',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.15), 0 0 0 1px rgba(99,102,241,0.07)',
+          }}
+        >
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="email" className="section-label block mb-2">
+                Email address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                autoComplete="email"
+                className="input-cyber w-full rounded-xl px-4 py-3 text-sm"
+              />
+            </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              autoComplete="current-password"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-            />
-          </div>
+            <div>
+              <label htmlFor="password" className="section-label block mb-2">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                className="input-cyber w-full rounded-xl px-4 py-3 text-sm"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Logging in...' : 'Log in'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-cyber w-full py-3 rounded-xl text-sm mt-2"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Signing in...
+                </span>
+              ) : 'Sign in'}
+            </button>
+          </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
-            Sign up
-          </Link>
-        </p>
+          <p className="text-center text-sm mt-6" style={{ color: 'var(--text-muted)' }}>
+            Don&apos;t have an account?{' '}
+            <Link
+              to="/register"
+              className="font-semibold transition-colors duration-150"
+              style={{ color: 'var(--text-link)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-link-hover)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-link)')}
+            >
+              Create one
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

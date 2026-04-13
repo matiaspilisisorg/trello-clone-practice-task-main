@@ -18,6 +18,31 @@ const updateItemSchema = z.object({
   checked: z.boolean(),
 });
 
+const createCommentSchema = z.object({
+  text: z.string().min(1, 'Text is required').max(1000, 'Comment too long'),
+});
+
+const updateCommentSchema = z.object({
+  text: z.string().min(1, 'Text is required').max(1000, 'Comment too long'),
+});
+
+async function assertCardAccess(cardId, userId) {
+  const card = await prisma.card.findUnique({
+    where: { id: cardId },
+    select: { list: { select: { board: { select: { ownerId: true } } } } },
+  });
+  if (!card) {
+    const err = new Error('Card not found');
+    err.status = 404;
+    throw err;
+  }
+  if (card.list.board.ownerId !== userId) {
+    const err = new Error('Forbidden');
+    err.status = 403;
+    throw err;
+  }
+}
+
 export async function getCard(req, res, next) {
   try {
     const card = await prisma.card.findUnique({
@@ -149,6 +174,80 @@ export async function deleteChecklistItem(req, res, next) {
     await prisma.checklistItem.delete({ where: { id: req.params.itemId } });
 
     res.json({ data: { message: 'Item deleted' } });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getComments(req, res, next) {
+  try {
+    await assertCardAccess(req.params.cardId, req.userId);
+    const limit = 20;
+    const { cursor } = req.query;
+    const comments = await prisma.comment.findMany({
+      where: { cardId: req.params.cardId },
+      include: { user: { select: { id: true, name: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+    });
+    const hasMore = comments.length === limit;
+    res.json({ data: comments, meta: { hasMore } });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function createComment(req, res, next) {
+  try {
+    await assertCardAccess(req.params.cardId, req.userId);
+    const parsed = createCommentSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.errors[0].message });
+    }
+    const comment = await prisma.comment.create({
+      data: {
+        text: parsed.data.text,
+        cardId: req.params.cardId,
+        userId: req.userId,
+      },
+      include: { user: { select: { id: true, name: true } } },
+    });
+    res.status(201).json({ data: comment });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateComment(req, res, next) {
+  try {
+    await assertCardAccess(req.params.cardId, req.userId);
+    const parsed = updateCommentSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.errors[0].message });
+    }
+    const comment = await prisma.comment.findUnique({ where: { id: req.params.commentId } });
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
+    if (comment.userId !== req.userId) return res.status(403).json({ error: 'Forbidden' });
+    const updated = await prisma.comment.update({
+      where: { id: req.params.commentId },
+      data: { text: parsed.data.text },
+      include: { user: { select: { id: true, name: true } } },
+    });
+    res.json({ data: updated });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deleteComment(req, res, next) {
+  try {
+    await assertCardAccess(req.params.cardId, req.userId);
+    const comment = await prisma.comment.findUnique({ where: { id: req.params.commentId } });
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
+    if (comment.userId !== req.userId) return res.status(403).json({ error: 'Forbidden' });
+    await prisma.comment.delete({ where: { id: req.params.commentId } });
+    res.json({ data: { message: 'Comment deleted' } });
   } catch (error) {
     next(error);
   }

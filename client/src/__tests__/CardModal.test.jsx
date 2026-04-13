@@ -21,6 +21,12 @@ vi.mock('../api/cards.js', () => ({
   deleteCard: vi.fn(),
 }));
 
+vi.mock('../api/comments.js', () => ({
+  getComments: vi.fn().mockResolvedValue({ data: [], meta: { hasMore: false } }),
+  addComment: vi.fn(),
+  deleteComment: vi.fn(),
+}));
+
 vi.mock('react-hot-toast', () => ({
   default: {
     error: vi.fn(),
@@ -80,7 +86,7 @@ describe('CardModal', () => {
       renderCardModal({ card: cardWithoutDesc });
 
       await waitFor(() => {
-        expect(screen.getByText('Add a more detailed description...')).toBeInTheDocument();
+        expect(screen.getByText('Click to add a description...')).toBeInTheDocument();
       });
     });
 
@@ -103,7 +109,8 @@ describe('CardModal', () => {
       expect(screen.getByText('Feature')).toBeInTheDocument();
 
       const urgentLabel = screen.getByText('Urgent').closest('span');
-      expect(urgentLabel).toHaveStyle({ backgroundColor: '#eb5a46' });
+      // Label text color matches the label color
+      expect(urgentLabel).toHaveStyle({ color: '#eb5a46' });
     });
   });
 
@@ -176,7 +183,7 @@ describe('CardModal', () => {
   });
 
   describe('adding labels', () => {
-    it('shows label form when "+ Add Label" is clicked', async () => {
+    it('shows label form when "Add label" is clicked', async () => {
       const user = userEvent.setup();
 
       renderCardModal();
@@ -185,17 +192,18 @@ describe('CardModal', () => {
         expect(screen.getByText('Test Card')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText('+ Add Label'));
+      await user.click(screen.getByText('Add label'));
 
-      expect(screen.getByPlaceholderText('Label text')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Label name...')).toBeInTheDocument();
     });
 
     it('adds a label and renders a new colored pill', async () => {
       const user = userEvent.setup();
 
+      // LABEL_COLORS[0] is '#4ade80'
       const cardWithNewLabel = {
         ...baseCard,
-        labels: [{ id: 'lbl-new', text: 'Bug', color: '#61bd4f' }],
+        labels: [{ id: 'lbl-new', text: 'Bug', color: '#4ade80' }],
       };
       cardDetailsApi.addLabel.mockResolvedValue(cardWithNewLabel);
 
@@ -210,21 +218,18 @@ describe('CardModal', () => {
         expect(screen.getByText('Test Card')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText('+ Add Label'));
+      await user.click(screen.getByText('Add label'));
 
-      const labelInput = screen.getByPlaceholderText('Label text');
+      const labelInput = screen.getByPlaceholderText('Label name...');
       await user.type(labelInput, 'Bug');
 
       const addButtons = screen.getAllByRole('button', { name: 'Add' });
-      const addLabelButton = addButtons.find(
-        (btn) => btn.closest('.bg-gray-50') || btn.textContent === 'Add'
-      );
-      await user.click(addLabelButton);
+      await user.click(addButtons[0]);
 
       await waitFor(() => {
         expect(cardDetailsApi.addLabel).toHaveBeenCalledWith('card1', {
           text: 'Bug',
-          color: '#61bd4f',
+          color: '#4ade80',
         });
       });
 
@@ -233,12 +238,12 @@ describe('CardModal', () => {
       });
 
       const labelPill = screen.getByText('Bug').closest('span');
-      expect(labelPill).toHaveStyle({ backgroundColor: '#61bd4f' });
+      expect(labelPill).toHaveStyle({ color: '#4ade80' });
     });
   });
 
   describe('checklists', () => {
-    it('shows checklist form when "+ Add Checklist" is clicked', async () => {
+    it('shows checklist form when "Add checklist" is clicked', async () => {
       const user = userEvent.setup();
 
       renderCardModal();
@@ -247,7 +252,7 @@ describe('CardModal', () => {
         expect(screen.getByText('Test Card')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText('+ Add Checklist'));
+      await user.click(screen.getByText('Add checklist'));
 
       expect(screen.getByPlaceholderText('Checklist title...')).toBeInTheDocument();
     });

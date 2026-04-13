@@ -67,8 +67,11 @@ describe('BoardCard (within BoardsPage)', () => {
       expect(screen.getByText('My Board')).toBeInTheDocument();
     });
 
-    const boardCard = screen.getByText('My Board').closest('div[style]');
-    expect(boardCard).toHaveStyle({ backgroundColor: '#519839' });
+    // Board color is shown in the accent bar at the top of the card (h-0.5 element)
+    const boardCard = screen.getByText('My Board').closest('[class*="rounded-2xl"]');
+    const accentBar = boardCard.querySelector('[class*="h-0.5"]');
+    expect(accentBar).toBeInTheDocument();
+    expect(accentBar).toHaveStyle({ background: '#519839' });
   });
 
   it('uses default color when board has no color', async () => {
@@ -82,8 +85,11 @@ describe('BoardCard (within BoardsPage)', () => {
       expect(screen.getByText('No Color Board')).toBeInTheDocument();
     });
 
-    const boardCard = screen.getByText('No Color Board').closest('div[style]');
-    expect(boardCard).toHaveStyle({ backgroundColor: '#0079bf' });
+    // Default color is #4f46e5 (indigo), shown in the accent bar (h-0.5 element)
+    const boardCard = screen.getByText('No Color Board').closest('[class*="rounded-2xl"]');
+    const accentBar = boardCard.querySelector('[class*="h-0.5"]');
+    expect(accentBar).toBeInTheDocument();
+    expect(accentBar).toHaveStyle({ background: '#4f46e5' });
   });
 
   it('shows delete button that triggers confirmation', async () => {
@@ -166,13 +172,13 @@ describe('BoardCard (within BoardsPage)', () => {
     confirmSpy.mockRestore();
   });
 
-  it('shows "Create new board" button', async () => {
+  it('shows "New board" button', async () => {
     boardsApi.getBoards.mockResolvedValue([]);
 
     renderBoardsPage();
 
     await waitFor(() => {
-      expect(screen.getByText('Create new board')).toBeInTheDocument();
+      expect(screen.getAllByText('New board').length).toBeGreaterThan(0);
     });
   });
 });

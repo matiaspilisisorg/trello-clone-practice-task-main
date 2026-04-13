@@ -39,6 +39,12 @@ vi.mock('../api/cardDetails.js', () => ({
   deleteChecklistItem: vi.fn(),
 }));
 
+vi.mock('../api/comments.js', () => ({
+  getComments: vi.fn().mockResolvedValue({ data: [], meta: { hasMore: false } }),
+  addComment: vi.fn(),
+  deleteComment: vi.fn(),
+}));
+
 vi.mock('react-hot-toast', () => ({
   default: {
     error: vi.fn(),
@@ -154,7 +160,7 @@ describe('BoardView', () => {
 
     await user.click(screen.getByText('Add another list'));
 
-    expect(screen.getByPlaceholderText('Enter list title...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('List title...')).toBeInTheDocument();
     expect(screen.getByText('Add list')).toBeInTheDocument();
   });
 
@@ -174,7 +180,7 @@ describe('BoardView', () => {
 
     await user.click(screen.getByText('Add another list'));
 
-    const input = screen.getByPlaceholderText('Enter list title...');
+    const input = screen.getByPlaceholderText('List title...');
     await user.type(input, 'Done');
     await user.click(screen.getByText('Add list'));
 
@@ -244,7 +250,9 @@ describe('BoardView', () => {
       expect(screen.getByText('Sprint Board')).toBeInTheDocument();
     });
 
-    const boardContainer = container.querySelector('div[style]');
-    expect(boardContainer).toHaveStyle({ backgroundColor: '#0079bf' });
+    // Board color is shown in the small color dot in the sub-header (w-2.5 h-2.5 rounded-full)
+    const colorDot = container.querySelector('[class*="w-2.5"][class*="rounded-full"]');
+    expect(colorDot).toBeInTheDocument();
+    expect(colorDot).toHaveStyle({ background: '#0079bf' });
   });
 });
